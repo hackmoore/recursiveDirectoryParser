@@ -1,20 +1,28 @@
 #!/usr/bin/env python
 
-from urllib2 import urlopen
-from urlparse import urljoin
+import requests
+from urllib.parse import urljoin
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 
-baseURL = "http://127.0.0.1/"
-targetFile = "target.txt"
+baseURL = "http://10.46.225.216/flag2/"
+targetFile = "flag2.txt"
 
 todoLinks = [baseURL]
 doneLinks = []
 bigCount = 0
 
+# Use a session for throttling
+session = requests.Session()
+retry = Retry(connect=3, backoff_factor=0.5)
+adapter = HTTPAdapter(max_retries=retry)
+
 while len(todoLinks) > 0:
     bigCount += 1
     print("Searching (%d): %s" % (bigCount, todoLinks[0]))
-    soup = BeautifulSoup(urlopen(todoLinks[0]))
+    response = session.get(todoLinks[0])
+    soup = BeautifulSoup(response.content, "html.parser")
     parsedLinks = soup.find_all('a', href=True)
 
     counter = 0
